@@ -500,6 +500,37 @@
       window._sbssScore = score;
     });
 
+    // ---- PDF HELPERS ----
+    function getTopPriority(inputs, score) {
+      if (inputs.latePayments === 'yes') return { title: 'Get current on all late payments immediately', note: 'Late payments are the fastest thing to fix and send the clearest negative signal to lenders. Call every creditor with an overdue balance this week and get on a payment plan if needed.' };
+      if (inputs.checking === 'no') return { title: 'Open a business checking account today', note: 'This is the easiest win available. Open a free business checking account this week and route all income through it. Six months from now this factor flips from negative to positive automatically.' };
+      if (inputs.credit === 'below580' || inputs.credit === '580-619') return { title: 'Raise your personal credit score', note: 'Your personal credit is the single largest driver of your SBSS. Getting from below 620 to 680 adds 15 to 50 points. Focus on paying down revolving balances and disputing any errors first.' };
+      if (inputs.credit === '620-659') return { title: 'Push your credit score above 660', note: 'You are 1 to 40 points away from removing a negative flag. Keep utilization below 30 percent and avoid new hard inquiries for 90 days. A small improvement here has an outsized effect on your score.' };
+      if (inputs.years === 'under1') return { title: 'Build everything else while you wait for time', note: 'Time in business cannot be accelerated. But every other factor can be improved now, so that the moment you cross the one-year mark your score is ready to move immediately.' };
+      if (inputs.debt === '100kplus') return { title: 'Reduce existing business debt before applying', note: 'High debt is actively working against you. Pay down the highest-rate obligations first. Reducing total debt by even 20 percent shifts your debt service ratio in a way lenders notice.' };
+      if (inputs.revenue === 'under50k') return { title: 'Document every dollar of revenue through your business account', note: 'Lenders see bank statement deposits, not just what you report. Route all business income through your business checking account consistently so your revenue is visible and verifiable.' };
+      return { title: 'Register with Dun and Bradstreet and build your Paydex score', note: 'You are close to the threshold. The fastest remaining lever is business credit. Get a DUNS number free at dnb.com, open two supplier accounts, pay them early, and build a Paydex of 80 or above in 90 days.' };
+    }
+
+    function getLenderMatch(score) {
+      if (score < 100) return { heading: 'Where to Look Right Now', body: 'At your current score, a traditional SBA 7(a) loan is not the right path yet. The options open to you now include CDFI microlenders like Accion Opportunity Fund and LiftFund, SBA microloans through nonprofit intermediaries up to $50,000 with flexible underwriting, and revenue-based financing if you have consistent monthly deposits above $3,000. These are not consolation prizes. They are the right tools for this stage, and using them responsibly builds the exact history that moves your SBSS up.' };
+      if (score < 140) return { heading: 'Lenders Most Likely to Work With You Now', body: 'Your score opens the door to SBA Community Advantage loans through CDFIs and mission-based lenders, SBA microloans up to $50,000, and credit unions with active SBA programs. Avoid large commercial banks for now. They apply the 165 threshold strictly. Community lenders have more discretion and often work with applicants who show a clear upward trajectory.' };
+      if (score < 165) return { heading: 'You Are Close to the Standard SBA Path', body: 'At ' + score + ' points you are within range. Some community banks and credit unions will consider applications in the 150 to 165 range with compensating factors like strong revenue, collateral, or a banking relationship. It is worth having a conversation with two or three community lenders now. Getting a conditional approval pending a 90-day improvement plan is a real possibility.' };
+      if (score < 185) return { heading: 'The Standard SBA Path Is Open', body: 'Your score clears the SBA minimum. SBA 7(a) and SBA Express loans up to $500,000 are accessible to you. Start with community banks and credit unions that have active SBA departments. Bring 2 years of business tax returns, 3 months of bank statements, and a clear one-page summary of how you will use the funds.' };
+      return { heading: 'You Are in Prime SBA Borrower Territory', body: 'At ' + score + ' points you are above the threshold where lenders compete for your business. SBA Express, standard 7(a), and SBA 504 for real estate or equipment are all available. Shop at least three lenders: a large bank, a community bank, and a credit union. At this score level you have genuine leverage to negotiate rates and terms.' };
+    }
+
+    function getTimeEstimate(inputs, score) {
+      if (score >= 165) return 'You are already above the threshold. Your focus now is strengthening your overall file to get the best rates, not just clearing the minimum.';
+      const gap = 165 - score;
+      if (inputs.latePayments === 'yes' && inputs.checking === 'no') return 'Realistic timeline: 3 to 6 months. Getting current on late payments and opening a business checking account are both actionable this week. Together they can add 15 to 23 points once they reflect in your profile.';
+      if (inputs.credit === 'below580') return 'Realistic timeline: 12 to 18 months. Personal credit at this level takes sustained effort to move. The good news is the biggest gains come earliest once you start working specific levers like utilization and dispute resolution.';
+      if (inputs.credit === '580-619' || inputs.credit === '620-659') return 'Realistic timeline: 6 to 12 months. You are in a range where focused credit work produces measurable results. Getting above 680 adds 10 to 30 points to your SBSS alone.';
+      if (gap <= 15) return 'Realistic timeline: 60 to 90 days. You are ' + gap + ' points away. One or two targeted improvements can close this gap. Run this calculator again in 8 weeks.';
+      if (gap <= 30) return 'Realistic timeline: 3 to 6 months. You need ' + gap + ' more points. Consistent action on two or three items in your plan gets you there well within the year.';
+      return 'Realistic timeline: 6 to 12 months. You need ' + gap + ' more points. Fix the negatives first, then build the positives. Progress compounds faster than most people expect once the momentum starts.';
+    }
+
     // ---- PDF GENERATION ----
     function generatePDF() {
       const inputs = window._sbssInputs;
@@ -832,7 +863,36 @@
       doc.setTextColor(...MUTED);
       doc.text('Ranked by impact on your SBSS score. Focus on the top two or three first. Progress compounds.', margin, y, { maxWidth: contentWidth });
 
-      y += 28;
+      y += 20;
+
+      // #1 Priority callout
+      const priority = getTopPriority(inputs, score);
+      doc.setFillColor(...INK);
+      doc.roundedRect(margin, y, contentWidth, 68, 8, 8, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...RED);
+      doc.text('YOUR #1 MOVE RIGHT NOW', margin + 16, y + 16);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...WHITE);
+      doc.text(priority.title, margin + 16, y + 30);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(180, 175, 170);
+      const priorityLines = doc.splitTextToSize(priority.note, contentWidth - 32);
+      doc.text(priorityLines, margin + 16, y + 44);
+
+      y += 82;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('FULL ACTION PLAN — RANKED BY IMPACT', margin, y);
+      y += 16;
 
       const actions = getActionPlan(inputs, score);
 
@@ -922,7 +982,41 @@
       const pg4Body3 = 'Crossing 200 is even better. At that level, most lenders consider you a prime SBA borrower. Rates improve. Collateral requirements can loosen. And you have leverage to negotiate terms.';
       const pg4Lines3 = doc.splitTextToSize(pg4Body3, contentWidth);
       doc.text(pg4Lines3, margin, y);
-      y += pg4Lines3.length * 14 + 28;
+      y += pg4Lines3.length * 14 + 16;
+
+      // Time estimate box
+      const timeEst = getTimeEstimate(inputs, score);
+      doc.setFillColor(...SURFACE);
+      doc.roundedRect(margin, y, contentWidth, 52, 8, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      doc.text('REALISTIC TIMELINE TO 165', margin + 16, y + 16);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK);
+      const timeLines = doc.splitTextToSize(timeEst, contentWidth - 32);
+      doc.text(timeLines, margin + 16, y + 30);
+      y += 66;
+
+      // Lender match
+      const lender = getLenderMatch(score);
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(margin, y, contentWidth, 90, 8, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('WHERE TO APPLY', margin + 16, y + 18);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...INK);
+      doc.text(lender.heading, margin + 16, y + 34);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...MUTED);
+      const lenderLines = doc.splitTextToSize(lender.body, contentWidth - 32);
+      doc.text(lenderLines, margin + 16, y + 50);
+      y += 104;
 
       // Milestones
       const milestones = [
