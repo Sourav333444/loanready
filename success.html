@@ -101,14 +101,28 @@
       font-weight: 800;
       letter-spacing: -0.03em;
       line-height: 1;
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.15rem;
     }
 
     .score-card-meta {
       font-size: 0.82rem;
       color: rgba(255,255,255,0.45);
       font-weight: 600;
+      margin-bottom: 1rem;
     }
+
+    .score-badge {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-below { background: rgba(212,34,34,0.28); color: #FF8080; }
+    .badge-above { background: rgba(26,122,58,0.35); color: #6FCFA0; }
 
     /* Summary rows */
     .summary-card {
@@ -215,7 +229,8 @@
     <div class="score-card" id="score-card">
       <p class="score-card-label">Your Estimated SBSS Score</p>
       <div class="score-card-number" id="final-score">0</div>
-      <p class="score-card-meta">out of 300 &mdash; <span id="status-text">calculating...</span></p>
+      <p class="score-card-meta">out of 300</p>
+      <span class="score-badge badge-below" id="status-badge">Calculating...</span>
     </div>
 
     <div class="summary-card" id="summary-card">
@@ -462,8 +477,15 @@
         }
       });
 
-      // Status text
-      document.getElementById('status-text').textContent = score >= 165 ? 'above threshold' : 'below threshold';
+      // Status badge
+      const badge = document.getElementById('status-badge');
+      if (score >= 165) {
+        badge.textContent = 'Above Threshold';
+        badge.className = 'score-badge badge-above';
+      } else {
+        badge.textContent = 'Below Threshold';
+        badge.className = 'score-badge badge-below';
+      }
 
       // Summary fields
       document.getElementById('sum-credit').textContent = CREDIT_LABELS[inputs.credit] || inputs.credit;
