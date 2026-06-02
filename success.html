@@ -101,14 +101,17 @@
       font-weight: 800;
       letter-spacing: -0.03em;
       line-height: 1;
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.6rem;
+      display: block;
     }
 
     .score-card-meta {
       font-size: 0.82rem;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.5);
       font-weight: 600;
       margin-bottom: 1rem;
+      display: block;
+      line-height: 1;
     }
 
     .score-badge {
@@ -222,14 +225,14 @@
   <div class="success-wrap">
 
     <div class="success-icon" id="success-icon">&#10003;</div>
-    <p class="success-eyebrow">Payment confirmed</p>
+    <p class="success-eyebrow">LoanReady &mdash; Free Report</p>
     <h1 class="success-heading">Your report is ready.</h1>
     <p class="success-sub">Here is your full SBSS score breakdown plus the 90-day game plan for your exact profile. Download your PDF below.</p>
 
     <div class="score-card" id="score-card">
       <p class="score-card-label">Your Estimated SBSS Score</p>
       <div class="score-card-number" id="final-score">0</div>
-      <p class="score-card-meta">out of 300</p>
+      <div class="score-card-meta">out of 300</div>
       <span class="score-badge badge-below" id="status-badge">Calculating...</span>
     </div>
 
