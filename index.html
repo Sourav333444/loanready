@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanReady — SBA Loan Decoder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #EDE8E0;
+      --surface: #E4DDD4;
+      --red: #D42222;
+      --ink: #1A1A18;
+      --muted: #7A7570;
+      --border: rgba(26,26,24,0.1);
+      --white: #FFFFFF;
+      --green: #1A7A3A;
+      --green-light: #E8F5ED;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      font-weight: 400;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 5rem 1.5rem 4rem;
+      overflow: hidden;
+    }
+
+    .circles-container {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--red);
+      opacity: 0.92;
+      transform: scale(0);
+    }
+
+    .circle-1 {
+      width: 420px; height: 420px;
+      top: -140px; right: -100px;
+    }
+    .circle-2 {
+      width: 300px; height: 300px;
+      top: 60px; right: 160px;
+    }
+    .circle-3 {
+      width: 200px; height: 200px;
+      top: -60px; right: 80px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      background: rgba(237, 232, 224, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 20px;
+      padding: 1.75rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #403C38;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-number {
+      font-size: clamp(5rem, 18vw, 8rem);
+      font-weight: 800;
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--ink);
+      max-width: 320px;
+      line-height: 1.65;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-chips {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .chip.red { background: var(--red); color: var(--white); border-color: var(--red); }
+
+    /* ---- SECTION WRAPPER ---- */
+    .section {
+      padding: 3rem 1.5rem;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    /* ---- FORM CARD ---- */
+    .form-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      border: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(32px);
+    }
+
+    .form-card h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.02em;
+    }
+
+    .form-card p.form-desc {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin-bottom: 1.25rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
+    }
+
+    .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%237A7570' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .field select:focus {
+      outline: none;
+      border-color: var(--red);
+    }
+
+    /* ---- TOGGLE ---- */
+    .toggle-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: 0.65rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+    }
+
+    .toggle-btn.active {
+      background: var(--ink);
+      color: var(--white);
+      border-color: var(--ink);
+    }
+
+    .toggle-btn:hover:not(.active) {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    /* ---- SUBMIT BUTTON ---- */
+    .btn-primary {
+      width: 100%;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      margin-top: 1.75rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212,34,34,0.35);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ---- RESULTS SECTION ---- */
+    #results-section {
+      display: none;
+      padding: 2rem 1.5rem;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .score-display-card {
+      background: var(--ink);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      color: var(--white);
+      margin-bottom: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-display-card::after {
+      content: '';
+      position: absolute;
+      width: 250px; height: 250px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      top: -80px; right: -60px;
+      pointer-events: none;
+    }
+
+    .score-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.5rem;
+    }
+
+    .score-number-display {
+      font-size: clamp(4rem, 16vw, 6.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .score-out-of {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      font-weight: 600;
+    }
+
+    .score-status-badge {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .badge-below { background: rgba(212,34,34,0.25); color: #FF8080; }
+    .badge-above { background: rgba(26,122,58,0.35); color: #6FCFA0; }
+
+    /* ---- GAUGE ---- */
+    .gauge-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+    }
+
+    .gauge-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .gauge-bar-wrap {
+      position: relative;
+      height: 14px;
+      border-radius: 100px;
+      overflow: visible;
+      background: linear-gradient(to right, #D42222 0%, #D42222 54.9%, #1A7A3A 55%, #1A7A3A 100%);
+      margin-bottom: 0.5rem;
+    }
+
+    .gauge-dot {
+      position: absolute;
+      top: 50%;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--ink);
+      transform: translate(-50%, -50%);
+      transition: left 0.8s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    .gauge-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 0.4rem;
+    }
+
+    .gauge-threshold-label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .gauge-threshold-label span.pill {
+      background: var(--green-light);
+      color: var(--green);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* ---- COMPONENT CARDS ---- */
+    .cards-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .component-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    .component-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      width: 44px; height: 44px;
+      background: var(--bg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .component-info { flex: 1; }
+
+    .component-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.15rem;
+    }
+
+    .component-note {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .component-impact {
+      font-size: 1rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .impact-neg { color: var(--red); }
+    .impact-pos { color: var(--green); }
+
+    /* ---- LOCKED SECTION ---- */
+    .locked-section {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    .locked-overlay {
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(237,232,224,0.6);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      z-index: 2;
+    }
+
+    .lock-icon {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .locked-overlay h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-align: center;
+    }
+
+    .locked-overlay p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: 220px;
+      line-height: 1.5;
+    }
+
+    .locked-preview {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .locked-preview h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    .locked-action-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .locked-action-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .locked-action-item::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ink);
+      opacity: 0.3;
+      flex-shrink: 0;
+    }
+
+    /* ---- CTA UNLOCK ---- */
+    .unlock-cta-card {
+      background: var(--red);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      color: var(--white);
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .unlock-cta-card h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .unlock-cta-card p {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .btn-unlock {
+      display: block;
+      width: 100%;
+      background: var(--white);
+      color: var(--red);
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-unlock:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+    }
+
+    .trust-note {
+      font-size: 0.72rem;
+      opacity: 0.6;
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+
+    /* ---- NAV ---- */
+    .site-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 500;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(237,232,224,0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand span {
+      color: var(--red);
+    }
+
+    .nav-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.25rem 0.65rem;
+    }
+
+    /* ---- EMAIL MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,24,0.65);
+      z-index: 900;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 2.25rem 2rem;
+      max-width: 380px;
+      width: 100%;
+      position: relative;
+      animation: modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: scale(0.92) translateY(16px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: var(--surface);
+      border: none;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .modal-close:hover { background: var(--border); }
+
+    .modal-eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.6rem;
+    }
+
+    .modal-heading {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-subtext {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-field input[type="email"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-field input[type="email"]:focus {
+      border-color: var(--red);
+    }
+
+    .modal-role-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .role-btn {
+      padding: 0.7rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .role-btn .role-icon {
+      font-size: 1rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .role-btn.active {
+      background: var(--ink);
+      color: var(--white);
+      border-color: var(--ink);
+    }
+
+    .role-btn:hover:not(.active) {
+      border-color: var(--ink);
+    }
+
+    .btn-modal-submit {
+      width: 100%;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-modal-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212,34,34,0.35);
+    }
+
+    .btn-modal-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .modal-privacy {
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* ---- FORM PRIVACY NOTE ---- */
+    .form-privacy-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 0.75rem;
+      line-height: 1.5;
+    }
+
+    /* ---- TRUST STRIP ---- */
+    .trust-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem 1.5rem;
+      padding: 1.5rem 1.5rem;
+      max-width: 520px;
+      margin: 0 auto;
+      border-top: 1px solid var(--border);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .trust-item span {
+      font-size: 0.85rem;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ---- GRAIN OVERLAY ---- */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.032;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ---- DEPTH SHADOWS ---- */
+    .form-card { box-shadow: 0 4px 40px rgba(26,26,24,0.09); }
+    .gauge-card { box-shadow: 0 2px 16px rgba(26,26,24,0.06); }
+    .locked-section { box-shadow: 0 2px 16px rgba(26,26,24,0.06); }
+    .unlock-cta-card { box-shadow: 0 8px 40px rgba(212,34,34,0.22); }
+    .score-display-card { box-shadow: 0 8px 40px rgba(26,26,24,0.18); }
+
+    /* ---- HERO INITIAL STATES ---- */
+    .hero-eyebrow { opacity: 0; transform: translateY(14px); }
+    .hero-subtitle { opacity: 0; transform: translateY(14px); }
+    .hero-chips { opacity: 0; transform: translateY(12px); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (min-width: 600px) {
+      .circle-1 { width: 560px; height: 560px; top: -180px; right: -140px; }
+      .circle-2 { width: 400px; height: 400px; top: 60px; right: 200px; }
+      .circle-3 { width: 260px; height: 260px; top: -80px; right: 110px; }
+
+      .hero { padding: 6rem 2.5rem 5rem; }
+      .section { padding: 3.5rem 2.5rem; }
+      #results-section { padding: 2.5rem 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="site-nav">
+    <div class="nav-brand">Loan<span>Ready</span></div>
+    <span class="nav-tag">Free Tool</span>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="circles-container">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+      <div class="circle circle-3"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">FICO SBSS Threshold &mdash; April 2025</p>
+      <div class="hero-number" id="hero-number">0</div>
+      <p class="hero-subtitle">The minimum score SBA lenders check before reading the rest of your application. Know where you stand before you apply.</p>
+      <div class="hero-chips">
+        <span class="chip red">Free estimate</span>
+        <span class="chip">2 minutes</span>
+        <span class="chip">No credit pull</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM -->
+  <section class="section">
+    <p class="section-label">Step 1 of 2 &mdash; Your Business Profile</p>
+    <div class="form-card" id="form-card">
+      <h2>Check Your SBSS Score</h2>
+      <p class="form-desc">Answer 6 quick questions. We use the same factors lenders weigh to estimate your FICO SBSS and show you exactly where you stand.</p>
+
+      <form id="sbss-form" autocomplete="off">
+
+        <div class="field">
+          <label for="credit">Personal Credit Score</label>
+          <select id="credit" name="credit" required>
+            <option value="" disabled selected>Select your range</option>
+            <option value="below580">Below 580</option>
+            <option value="580-619">580 to 619</option>
+            <option value="620-659">620 to 659</option>
+            <option value="660-699">660 to 699</option>
+            <option value="700-749">700 to 749</option>
+            <option value="750plus">750 and above</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="years">Years in Business</label>
+          <select id="years" name="years" required>
+            <option value="" disabled selected>Select time in business</option>
+            <option value="under1">Less than 1 year</option>
+            <option value="1-2">1 to 2 years</option>
+            <option value="2-5">2 to 5 years</option>
+            <option value="5plus">5 or more years</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="revenue">Annual Revenue</label>
+          <select id="revenue" name="revenue" required>
+            <option value="" disabled selected>Select revenue range</option>
+            <option value="under50k">Under $50K</option>
+            <option value="50-150k">$50K to $150K</option>
+            <option value="150-500k">$150K to $500K</option>
+            <option value="500k-1m">$500K to $1M</option>
+            <option value="1mplus">Over $1M</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="debt">Existing Business Debt</label>
+          <select id="debt" name="debt" required>
+            <option value="" disabled selected>Select debt level</option>
+            <option value="none">None</option>
+            <option value="under25k">Under $25K</option>
+            <option value="25-100k">$25K to $100K</option>
+            <option value="100kplus">Over $100K</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Business Checking Open 6+ Months?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn" data-field="checking" data-value="yes">Yes</button>
+            <button type="button" class="toggle-btn" data-field="checking" data-value="no">No</button>
+          </div>
+          <input type="hidden" id="checking" name="checking" value="" />
+        </div>
+
+        <div class="field">
+          <label>Any Late Payments in Past 12 Months?</label>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn" data-field="latePayments" data-value="yes">Yes</button>
+            <button type="button" class="toggle-btn" data-field="latePayments" data-value="no">No</button>
+          </div>
+          <input type="hidden" id="latePayments" name="latePayments" value="" />
+        </div>
+
+        <button type="submit" class="btn-primary">Get My Score &mdash; Free</button>
+        <p class="form-privacy-note">&#128274; Your answers never leave your browser. This tool runs entirely on your device.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results-section">
+
+    <!-- Score Card -->
+    <div class="score-display-card">
+      <p class="score-eyebrow">Your Estimated SBSS Score</p>
+      <div class="score-number-display" id="result-number">0</div>
+      <div class="score-out-of">out of 300</div>
+      <div class="score-status-badge" id="score-badge">Calculating...</div>
+    </div>
+
+    <!-- Gauge -->
+    <div class="gauge-card">
+      <p class="gauge-label">Score vs. SBA Threshold</p>
+      <div class="gauge-bar-wrap">
+        <div class="gauge-dot" id="gauge-dot" style="left: 0%"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span>0</span>
+        <span>75</span>
+        <span>150</span>
+        <span>165</span>
+        <span>225</span>
+        <span>300</span>
+      </div>
+      <div class="gauge-threshold-label">
+        <span class="pill">165</span>
+        SBA minimum as of April 2025
+      </div>
+    </div>
+
+    <!-- Component Cards -->
+    <p class="section-label" style="padding:0 0 0.5rem;">What is affecting your score</p>
+    <div class="cards-row" id="cards-row">
+      <div class="component-card" id="card-1">
+        <div class="component-icon" id="card-1-icon"></div>
+        <div class="component-info">
+          <div class="component-name" id="card-1-name"></div>
+          <div class="component-note" id="card-1-note"></div>
+        </div>
+        <div class="component-impact" id="card-1-impact"></div>
+      </div>
+      <div class="component-card" id="card-2">
+        <div class="component-icon" id="card-2-icon"></div>
+        <div class="component-info">
+          <div class="component-name" id="card-2-name"></div>
+          <div class="component-note" id="card-2-note"></div>
+        </div>
+        <div class="component-impact" id="card-2-impact"></div>
+      </div>
+      <div class="component-card" id="card-3">
+        <div class="component-icon" id="card-3-icon"></div>
+        <div class="component-info">
+          <div class="component-name" id="card-3-name"></div>
+          <div class="component-note" id="card-3-note"></div>
+        </div>
+        <div class="component-impact" id="card-3-impact"></div>
+      </div>
+    </div>
+
+    <!-- Locked Section -->
+    <div class="locked-section">
+      <div class="locked-preview">
+        <h3>Your 90-Day Fix Plan</h3>
+        <div class="locked-action-row">
+          <div class="locked-action-item">Raise personal credit score from 620 to 680+</div>
+          <div class="locked-action-item">Open a dedicated business checking account now</div>
+          <div class="locked-action-item">Dispute errors on your personal credit report</div>
+          <div class="locked-action-item">Register with Dun and Bradstreet to build Paydex</div>
+          <div class="locked-action-item">Keep business debt utilization under 30%</div>
+          <div class="locked-action-item">Separate personal and business finances completely</div>
+        </div>
+      </div>
+      <div class="locked-overlay">
+        <div class="lock-icon">&#128274;</div>
+        <h3>Full 90-Day Fix Plan</h3>
+        <p>6 specific actions ranked by impact, written for your exact profile</p>
+      </div>
+    </div>
+
+    <!-- Unlock CTA -->
+    <div class="unlock-cta-card">
+      <h3>Unlock Your Full Report</h3>
+      <p>Get a personalized PDF with your score breakdown, what each factor means for your approval odds, and a 90-day game plan written for your exact numbers.</p>
+      <button class="btn-unlock" id="unlock-btn">Get My Full Report</button>
+      <p class="trust-note">Free during early access. PDF downloads instantly on the next page.</p>
+    </div>
+
+  </section>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="trust-item"><span>&#128274;</span> No data stored server-side</div>
+    <div class="trust-item"><span>&#128683;</span> No tracking. No ads. No cookies.</div>
+    <div class="trust-item"><span>&#128100;</span> Built by Sourav V., Austin TX</div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <strong>LoanReady</strong> &mdash; This tool provides an educational estimate based on publicly available SBA and FICO SBSS guidelines updated April 2025. It is not a formal credit decision or guarantee of loan approval.<br /><br />
+    Built by Sourav V., acquisition researcher based in Austin, TX. &nbsp;&middot;&nbsp; <a href="privacy.html" style="color:var(--muted);text-decoration:underline;">Privacy Policy</a> &nbsp;&middot;&nbsp; sourav@loanready.click
+  </footer>
+
+  <!-- EMAIL MODAL -->
+  <div class="modal-overlay" id="email-modal">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close">&#x2715;</button>
+      <p class="modal-eyebrow">One quick step</p>
+      <h2 class="modal-heading">Where should we send your report?</h2>
+      <p class="modal-subtext">Free during early access. No spam. One email with your PDF, that is it.</p>
+      <div class="modal-field">
+        <label for="user-email">Email address</label>
+        <input type="email" id="user-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="modal-field">
+        <label>I am a...</label>
+        <div class="modal-role-group" id="role-group">
+          <button type="button" class="role-btn" data-role="owner"><span class="role-icon">&#127970;</span> Business Owner</button>
+          <button type="button" class="role-btn" data-role="buyer"><span class="role-icon">&#129309;</span> Buying a Business</button>
+          <button type="button" class="role-btn" data-role="broker"><span class="role-icon">&#128203;</span> Business Broker</button>
+        </div>
+      </div>
+      <button class="btn-modal-submit" id="modal-submit" disabled>Get My Report</button>
+      <p class="modal-privacy">No spam. Unsubscribe any time.</p>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="../GSAP/dist/all.js"></script>
+  <script src="../GSAP/dist/ScrollTrigger.min.js"></script>
+  <script>
+    // Register ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ---- CIRCLES ANIMATION ----
+    gsap.to('.circle', {
+      scale: 1,
+      duration: 1.2,
+      ease: 'back.out(1.7)',
+      stagger: 0.18,
+      delay: 0.1
+    });
+
+    // ---- CIRCLES PARALLAX ON SCROLL ----
+    gsap.to('.circles-container', {
+      y: -80,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1.2
+      }
+    });
+
+    // ---- HERO TEXT STAGGER IN ----
+    gsap.to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.65, delay: 0.35, ease: 'power2.out' });
+    gsap.to('.hero-subtitle', { opacity: 1, y: 0, duration: 0.65, delay: 0.6, ease: 'power2.out' });
+    gsap.to('.hero-chips',    { opacity: 1, y: 0, duration: 0.6,  delay: 0.82, ease: 'power2.out' });
+
+    // ---- HERO NUMBER COUNT-UP ----
+    const heroNumberEl = document.getElementById('hero-number');
+    gsap.to({ val: 0 }, {
+      val: 165,
+      duration: 1.8,
+      delay: 0.4,
+      ease: 'power2.out',
+      onUpdate: function() {
+        heroNumberEl.textContent = Math.round(this.targets()[0].val);
+      }
+    });
+
+    // ---- SECTION LABEL SCROLL REVEAL ----
+    gsap.utils.toArray('.section-label').forEach(el => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.6, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+      });
+    });
+
+    // ---- FORM CARD SCROLL REVEAL ----
+    gsap.to('#form-card', {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '#form-card',
+        start: 'top 85%',
+        once: true
+      }
+    });
+
+    // ---- TRUST STRIP STAGGER ----
+    gsap.to('.trust-item', {
+      opacity: 1, y: 0,
+      duration: 0.5,
+      stagger: 0.13,
+      ease: 'power2.out',
+      scrollTrigger: { trigger: '.trust-strip', start: 'top 92%', once: true }
+    });
+
+    // ---- TOGGLE BUTTONS ----
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const field = btn.dataset.field;
+        const value = btn.dataset.value;
+        document.querySelectorAll(`.toggle-btn[data-field="${field}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(field).value = value;
+      });
+    });
+
+    // ---- SCORE CALCULATION ----
+    function calculateSBSS(inputs) {
+      let score = 140;
+      const creditMap = {
+        'below580': -30, '580-619': -15, '620-659': -5,
+        '660-699': 5, '700-749': 20, '750plus': 35
+      };
+      score += creditMap[inputs.credit] || 0;
+
+      const yearsMap = { 'under1': -20, '1-2': -5, '2-5': 10, '5plus': 20 };
+      score += yearsMap[inputs.years] || 0;
+
+      const revMap = {
+        'under50k': -15, '50-150k': -5, '150-500k': 5,
+        '500k-1m': 12, '1mplus': 18
+      };
+      score += revMap[inputs.revenue] || 0;
+
+      const debtMap = { 'none': 10, 'under25k': 5, '25-100k': -5, '100kplus': -15 };
+      score += debtMap[inputs.debt] || 0;
+
+      if (inputs.checking === 'yes') score += 8;
+      else score -= 8;
+
+      if (inputs.latePayments === 'no') score += 10;
+      else score -= 15;
+
+      return Math.min(Math.max(score, 60), 280);
+    }
+
+    // ---- SCORE COMPONENTS ----
+    function getScoreComponents(inputs) {
+      const creditMap = {
+        'below580': { impact: -30, label: 'Credit Score', icon: '&#128683;', note: 'Below 580 is the biggest drag on your SBSS. Lenders want 680+.', quick: false },
+        '580-619': { impact: -15, label: 'Credit Score', icon: '&#128683;', note: 'Under 620 puts you in high-risk territory for SBA. A 60-point bump changes everything.', quick: false },
+        '620-659': { impact: -5, label: 'Credit Score', icon: '&#128993;', note: 'You are close. Getting above 660 removes a negative flag from your file.', quick: false },
+        '660-699': { impact: 5, label: 'Credit Score', icon: '&#128994;', note: 'Solid range. Getting to 700+ gives lenders extra comfort.', quick: false },
+        '700-749': { impact: 20, label: 'Credit Score', icon: '&#128994;', note: 'Strong personal credit. This is working in your favor.', quick: false },
+        '750plus': { impact: 35, label: 'Credit Score', icon: '&#11088;', note: 'Excellent. Your personal credit is a genuine strength here.', quick: false }
+      };
+
+      const yearsMap = {
+        'under1': { impact: -20, label: 'Time in Business', icon: '&#128197;', note: 'Under 1 year is a real hurdle. Lenders see new businesses as higher risk.', quick: false },
+        '1-2': { impact: -5, label: 'Time in Business', icon: '&#128197;', note: 'Getting to the 2-year mark unlocks better loan options and scoring.', quick: true },
+        '2-5': { impact: 10, label: 'Time in Business', icon: '&#128197;', note: 'Two to five years shows staying power. This is working for you.', quick: false },
+        '5plus': { impact: 20, label: 'Time in Business', icon: '&#128197;', note: 'Five-plus years is a strong signal. Lenders trust established businesses.', quick: false }
+      };
+
+      const revMap = {
+        'under50k': { impact: -15, label: 'Annual Revenue', icon: '&#128200;', note: 'Low revenue raises questions about repayment capacity. Growing to $50K+ helps.', quick: false },
+        '50-150k': { impact: -5, label: 'Annual Revenue', icon: '&#128200;', note: 'Getting above $150K gives lenders more confidence in your cash flow.', quick: false },
+        '150-500k': { impact: 5, label: 'Annual Revenue', icon: '&#128200;', note: 'Healthy revenue range. This is a positive data point.', quick: false },
+        '500k-1m': { impact: 12, label: 'Annual Revenue', icon: '&#128200;', note: 'Strong revenue adds real lift to your profile.', quick: false },
+        '1mplus': { impact: 18, label: 'Annual Revenue', icon: '&#128200;', note: 'Over $1M in revenue is a significant positive factor.', quick: false }
+      };
+
+      const debtMap = {
+        'none': { impact: 10, label: 'Business Debt', icon: '&#128181;', note: 'No existing debt means your full revenue is available for repayment. Lenders like this.', quick: false },
+        'under25k': { impact: 5, label: 'Business Debt', icon: '&#128181;', note: 'Manageable debt load. This is not a red flag.', quick: false },
+        '25-100k': { impact: -5, label: 'Business Debt', icon: '&#128181;', note: 'Moderate debt. Paying some down before applying can help your ratio.', quick: true },
+        '100kplus': { impact: -15, label: 'Business Debt', icon: '&#128683;', note: 'High existing debt raises repayment risk. Reducing this is high priority.', quick: false }
+      };
+
+      const checkingData = inputs.checking === 'yes'
+        ? { impact: 8, label: 'Banking History', icon: '&#127981;', note: 'An established business account shows financial stability. Good.', quick: false }
+        : { impact: -8, label: 'Banking History', icon: '&#127981;', note: 'Opening a dedicated business checking today starts your 6-month clock.', quick: true };
+
+      const lateData = inputs.latePayments === 'no'
+        ? { impact: 10, label: 'Payment History', icon: '&#9989;', note: 'Clean payment history is one of the easiest ways to build trust. Keep it.', quick: false }
+        : { impact: -15, label: 'Payment History', icon: '&#128683;', note: 'Late payments send a direct negative signal. Getting current is the fastest fix.', quick: true };
+
+      const allFactors = [
+        creditMap[inputs.credit],
+        yearsMap[inputs.years],
+        revMap[inputs.revenue],
+        debtMap[inputs.debt],
+        checkingData,
+        lateData
+      ];
+
+      // Sort: most negative first, then quick wins, then positives
+      const negatives = allFactors.filter(f => f.impact < 0).sort((a, b) => a.impact - b.impact);
+      const quickWins = allFactors.filter(f => f.quick && f.impact >= 0);
+      const positives = allFactors.filter(f => !f.quick && f.impact > 0).sort((a, b) => b.impact - a.impact);
+
+      const ordered = [...negatives, ...quickWins, ...positives];
+      return ordered.slice(0, 3);
+    }
+
+    // ---- LABELS FOR PDF ----
+    const CREDIT_LABELS = {
+      'below580': 'Below 580', '580-619': '580 to 619', '620-659': '620 to 659',
+      '660-699': '660 to 699', '700-749': '700 to 749', '750plus': '750 and above'
+    };
+    const YEARS_LABELS = {
+      'under1': 'Less than 1 year', '1-2': '1 to 2 years', '2-5': '2 to 5 years', '5plus': '5 or more years'
+    };
+    const REV_LABELS = {
+      'under50k': 'Under $50K', '50-150k': '$50K to $150K', '150-500k': '$150K to $500K',
+      '500k-1m': '$500K to $1M', '1mplus': 'Over $1M'
+    };
+    const DEBT_LABELS = {
+      'none': 'None', 'under25k': 'Under $25K', '25-100k': '$25K to $100K', '100kplus': 'Over $100K'
+    };
+
+    // ---- FORM SUBMIT ----
+    document.getElementById('sbss-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const checking = document.getElementById('checking').value;
+      const latePayments = document.getElementById('latePayments').value;
+
+      if (!checking || !latePayments) {
+        alert('Please answer both Yes/No questions above.');
+        return;
+      }
+
+      const inputs = {
+        credit: document.getElementById('credit').value,
+        years: document.getElementById('years').value,
+        revenue: document.getElementById('revenue').value,
+        debt: document.getElementById('debt').value,
+        checking,
+        latePayments
+      };
+
+      const score = calculateSBSS(inputs);
+      showResults(score, inputs);
+
+      // Store for Stripe + PDF
+      localStorage.setItem('sbss_inputs', JSON.stringify(inputs));
+      localStorage.setItem('sbss_score', score);
+    });
+
+    // ---- SHOW RESULTS ----
+    function showResults(score, inputs) {
+      const resultsEl = document.getElementById('results-section');
+      resultsEl.style.display = 'block';
+
+      // Smooth scroll
+      setTimeout(() => {
+        resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      // Entry animations for result cards
+      gsap.from('.score-display-card', { opacity: 0, y: 32, duration: 0.7, delay: 0.15, ease: 'power2.out' });
+      gsap.from('.gauge-card',         { opacity: 0, y: 32, duration: 0.7, delay: 0.3,  ease: 'power2.out' });
+      gsap.from('.locked-section',     { opacity: 0, y: 32, duration: 0.7, delay: 0.55, ease: 'power2.out' });
+      gsap.from('.unlock-cta-card',    { opacity: 0, scale: 0.96, duration: 0.65, delay: 0.7, ease: 'back.out(1.5)' });
+      gsap.to('#results-section .section-label', { opacity: 1, y: 0, duration: 0.5, delay: 0.4, ease: 'power2.out' });
+
+      // Score count-up
+      const resultNumberEl = document.getElementById('result-number');
+      gsap.to({ val: 0 }, {
+        val: score,
+        duration: 1.6,
+        delay: 0.3,
+        ease: 'power2.out',
+        onUpdate: function() {
+          resultNumberEl.textContent = Math.round(this.targets()[0].val);
+        }
+      });
+
+      // Badge
+      const badge = document.getElementById('score-badge');
+      if (score >= 165) {
+        badge.textContent = 'Above Threshold';
+        badge.className = 'score-status-badge badge-above';
+      } else {
+        badge.textContent = 'Below Threshold';
+        badge.className = 'score-status-badge badge-below';
+      }
+
+      // Gauge dot
+      const pct = (score / 300) * 100;
+      setTimeout(() => {
+        document.getElementById('gauge-dot').style.left = Math.min(pct, 98) + '%';
+      }, 400);
+
+      // Component cards
+      const components = getScoreComponents(inputs);
+      [1, 2, 3].forEach((n, idx) => {
+        const c = components[idx];
+        if (!c) return;
+        document.getElementById(`card-${n}-icon`).innerHTML = c.icon;
+        document.getElementById(`card-${n}-name`).textContent = c.label;
+        document.getElementById(`card-${n}-note`).textContent = c.note;
+        const impactEl = document.getElementById(`card-${n}-impact`);
+        const sign = c.impact > 0 ? '+' : '';
+        impactEl.textContent = sign + c.impact;
+        impactEl.className = 'component-impact ' + (c.impact >= 0 ? 'impact-pos' : 'impact-neg');
+      });
+
+      // Animate cards in
+      gsap.to('.component-card', {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.15,
+        ease: 'power2.out',
+        delay: 0.5
+      });
+    }
+
+    // ---- EMAIL MODAL FLOW ----
+    const modal = document.getElementById('email-modal');
+    const modalClose = document.getElementById('modal-close');
+    const modalSubmit = document.getElementById('modal-submit');
+    const emailInput = document.getElementById('user-email');
+    let selectedRole = '';
+
+    document.getElementById('unlock-btn').addEventListener('click', function() {
+      const score = localStorage.getItem('sbss_score');
+      if (!score) {
+        alert('Please fill out the form first to see your score.');
+        document.getElementById('form-card').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      selectedRole = '';
+      emailInput.value = '';
+      modalSubmit.disabled = true;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      modal.classList.add('open');
+    });
+
+    modalClose.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedRole = btn.dataset.role;
+        checkModalReady();
+      });
+    });
+
+    emailInput.addEventListener('input', checkModalReady);
+
+    function checkModalReady() {
+      const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim());
+      modalSubmit.disabled = !(validEmail && selectedRole);
+    }
+
+    modalSubmit.addEventListener('click', function() {
+      localStorage.setItem('user_email', emailInput.value.trim());
+      localStorage.setItem('user_role', selectedRole);
+      modal.classList.remove('open');
+      window.location.href = 'success.html';
+    });
+  </script>
+  <script src="https://js.stripe.com/v3/"></script>
+</body>
+</html>

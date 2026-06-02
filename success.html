@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your SBA Loan Readiness Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #EDE8E0;
+      --surface: #E4DDD4;
+      --red: #D42222;
+      --ink: #1A1A18;
+      --muted: #7A7570;
+      --border: rgba(26,26,24,0.1);
+      --white: #FFFFFF;
+      --green: #1A7A3A;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 3rem 1.5rem;
+    }
+
+    .success-wrap {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .success-icon {
+      width: 68px; height: 68px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      transform: scale(0);
+    }
+
+    .success-eyebrow {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .success-heading {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+      line-height: 1.15;
+    }
+
+    .success-sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Score preview card */
+    .score-card {
+      background: var(--ink);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      color: var(--white);
+      margin-bottom: 1.25rem;
+      transform: translateY(24px);
+      opacity: 0;
+    }
+
+    .score-card-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 0.4rem;
+    }
+
+    .score-card-number {
+      font-size: 5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .score-card-meta {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.45);
+      font-weight: 600;
+    }
+
+    /* Summary rows */
+    .summary-card {
+      background: var(--white);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transform: translateY(24px);
+      opacity: 0;
+    }
+
+    .summary-card h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row .row-label { color: var(--muted); font-weight: 600; }
+    .summary-row .row-value { font-weight: 700; color: var(--ink); }
+
+    /* PDF Button */
+    .btn-pdf {
+      width: 100%;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 1.1rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+      transform: translateY(24px);
+      opacity: 0;
+    }
+
+    .btn-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212,34,34,0.35);
+    }
+
+    .btn-pdf:active { transform: translateY(0); }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 1rem;
+      padding: 0.5rem;
+    }
+
+    .back-link:hover { color: var(--ink); }
+
+    .disclaimer {
+      margin-top: 2.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    #generating-msg {
+      display: none;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-wrap">
+
+    <div class="success-icon" id="success-icon">&#10003;</div>
+    <p class="success-eyebrow">Payment confirmed</p>
+    <h1 class="success-heading">Your report is ready.</h1>
+    <p class="success-sub">Here is your full SBSS score breakdown plus the 90-day game plan for your exact profile. Download your PDF below.</p>
+
+    <div class="score-card" id="score-card">
+      <p class="score-card-label">Your Estimated SBSS Score</p>
+      <div class="score-card-number" id="final-score">0</div>
+      <p class="score-card-meta">out of 300 &mdash; <span id="status-text">calculating...</span></p>
+    </div>
+
+    <div class="summary-card" id="summary-card">
+      <h3>Profile Summary</h3>
+      <div class="summary-row">
+        <span class="row-label">Personal Credit Score</span>
+        <span class="row-value" id="sum-credit"></span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">Years in Business</span>
+        <span class="row-value" id="sum-years"></span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">Annual Revenue</span>
+        <span class="row-value" id="sum-revenue"></span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">Existing Business Debt</span>
+        <span class="row-value" id="sum-debt"></span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">Business Checking 6+ Months</span>
+        <span class="row-value" id="sum-checking"></span>
+      </div>
+      <div class="summary-row">
+        <span class="row-label">Late Payments (12 Months)</span>
+        <span class="row-value" id="sum-late"></span>
+      </div>
+    </div>
+
+    <button class="btn-pdf" id="btn-pdf" onclick="generatePDF()">
+      &#8595; Download Your PDF Report
+    </button>
+
+    <div id="generating-msg">Building your report...</div>
+
+    <a href="index.html" class="back-link">Back to calculator</a>
+
+    <p class="disclaimer">
+      This report is an educational estimate based on publicly available SBA guidelines updated April 2025. It is not a formal credit assessment or guarantee of loan approval.
+    </p>
+
+  </div>
+
+  <script src="../GSAP/dist/all.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    // ---- LABEL MAPS ----
+    const CREDIT_LABELS = {
+      'below580': 'Below 580', '580-619': '580 to 619', '620-659': '620 to 659',
+      '660-699': '660 to 699', '700-749': '700 to 749', '750plus': '750 and above'
+    };
+    const YEARS_LABELS = {
+      'under1': 'Less than 1 year', '1-2': '1 to 2 years',
+      '2-5': '2 to 5 years', '5plus': '5 or more years'
+    };
+    const REV_LABELS = {
+      'under50k': 'Under $50K', '50-150k': '$50K to $150K', '150-500k': '$150K to $500K',
+      '500k-1m': '$500K to $1M', '1mplus': 'Over $1M'
+    };
+    const DEBT_LABELS = {
+      'none': 'None', 'under25k': 'Under $25K', '25-100k': '$25K to $100K', '100kplus': 'Over $100K'
+    };
+
+    // ---- SCORE CALC ----
+    function calculateSBSS(inputs) {
+      let score = 140;
+      const creditMap = {
+        'below580': -30, '580-619': -15, '620-659': -5,
+        '660-699': 5, '700-749': 20, '750plus': 35
+      };
+      score += creditMap[inputs.credit] || 0;
+      const yearsMap = { 'under1': -20, '1-2': -5, '2-5': 10, '5plus': 20 };
+      score += yearsMap[inputs.years] || 0;
+      const revMap = {
+        'under50k': -15, '50-150k': -5, '150-500k': 5, '500k-1m': 12, '1mplus': 18
+      };
+      score += revMap[inputs.revenue] || 0;
+      const debtMap = { 'none': 10, 'under25k': 5, '25-100k': -5, '100kplus': -15 };
+      score += debtMap[inputs.debt] || 0;
+      if (inputs.checking === 'yes') score += 8; else score -= 8;
+      if (inputs.latePayments === 'no') score += 10; else score -= 15;
+      return Math.min(Math.max(score, 60), 280);
+    }
+
+    // ---- FACTOR DETAILS FOR PDF ----
+    function getFactorDetails(inputs) {
+      const creditMap = {
+        'below580': { title: 'Personal Credit Score (Below 580)', impact: -30, body: 'Your personal credit score is below 580. This is the largest single factor pulling your SBSS down. The FICO SBSS model puts significant weight on the owner\'s personal credit because it reflects how you manage financial obligations. SBA lenders want to see at least 680, and ideally 700 or above. Getting here is a 6 to 18 month project but it is the highest-leverage move you can make.' },
+        '580-619': { title: 'Personal Credit Score (580 to 619)', impact: -15, body: 'Your personal credit score is in the 580 to 619 range. This is pulling your SBSS down meaningfully. The gap from 619 to 680 is smaller than it looks once you start working specific levers, like paying down revolving balances and disputing any inaccurate items.' },
+        '620-659': { title: 'Personal Credit Score (620 to 659)', impact: -5, body: 'You are in the 620 to 659 range, which is close to the threshold lenders prefer. A modest improvement to 660 or above removes a negative flag. Focus on keeping utilization below 30% and avoiding new credit inquiries for the next 90 days.' },
+        '660-699': { title: 'Personal Credit Score (660 to 699)', impact: 5, body: 'Your personal credit is in a decent range and is contributing positively to your score. Getting to 700 or above adds a small but meaningful boost and removes any marginal hesitation from underwriters.' },
+        '700-749': { title: 'Personal Credit Score (700 to 749)', impact: 20, body: 'Strong personal credit. This range is working solidly in your favor. Lenders see this and move past it quickly, which means their attention goes to the business factors instead.' },
+        '750plus': { title: 'Personal Credit Score (750 and above)', impact: 35, body: 'Excellent personal credit. This is one of your strongest assets in the SBSS calculation. It signals consistent, responsible financial behavior and gives lenders confidence before they even look at the business numbers.' }
+      };
+
+      const yearsMap = {
+        'under1': { title: 'Time in Business (Less Than 1 Year)', impact: -20, body: 'Being under a year old is a significant drag on your score. Startups have a higher failure rate, and lenders price that risk in. The good news is this factor improves automatically over time. In the meantime, focus on everything else in this list to build the strongest possible profile by the time you reach the one-year mark.' },
+        '1-2': { title: 'Time in Business (1 to 2 Years)', impact: -5, body: 'You are past the hardest part. At one to two years, lenders start to see some track record. The two-year mark is a meaningful milestone where several additional loan products become available. Hitting it changes your options noticeably.' },
+        '2-5': { title: 'Time in Business (2 to 5 Years)', impact: 10, body: 'Two to five years in business is a positive signal. You have demonstrated staying power. This factor is contributing to your score and is not an area that needs attention.' },
+        '5plus': { title: 'Time in Business (5 or More Years)', impact: 20, body: 'Five or more years in business is a strong positive. Lenders trust businesses with this kind of track record. This is working for you and does not need to change.' }
+      };
+
+      const revMap = {
+        'under50k': { title: 'Annual Revenue (Under $50K)', impact: -15, body: 'Revenue under $50K raises questions about your capacity to repay a loan. The SBSS model factors in revenue as a signal of business health. Growing your top line even modestly, and documenting it through your business bank account, strengthens this factor significantly.' },
+        '50-150k': { title: 'Annual Revenue ($50K to $150K)', impact: -5, body: 'Your revenue is in a modest range. It is not a major problem, but crossing the $150K mark would remove this as a drag and start adding lift instead. Focus on documenting consistent monthly deposits in your business account.' },
+        '150-500k': { title: 'Annual Revenue ($150K to $500K)', impact: 5, body: 'Good revenue range. This is contributing positively to your profile and tells lenders you have real cash flow to work with.' },
+        '500k-1m': { title: 'Annual Revenue ($500K to $1M)', impact: 12, body: 'Strong revenue adds meaningful lift to your SBSS. This is a real positive in your profile.' },
+        '1mplus': { title: 'Annual Revenue (Over $1M)', impact: 18, body: 'Over $1M in annual revenue is a significant strength. This tells lenders your business has real scale and repayment capacity.' }
+      };
+
+      const debtMap = {
+        'none': { title: 'Existing Business Debt (None)', impact: 10, body: 'No existing business debt is a positive. Your full revenue is available for debt service on a new loan, and lenders see that clearly.' },
+        'under25k': { title: 'Existing Business Debt (Under $25K)', impact: 5, body: 'Your debt load is manageable and is not a red flag. This is contributing positively.' },
+        '25-100k': { title: 'Existing Business Debt ($25K to $100K)', impact: -5, body: 'Moderate existing debt is a small drag. Paying down what you can before applying, even by $10K to $15K, can shift the picture. Lenders look at total debt-to-revenue ratio.' },
+        '100kplus': { title: 'Existing Business Debt (Over $100K)', impact: -15, body: 'High existing debt is a meaningful negative. The concern is whether adding another loan creates a repayment burden your revenue cannot support. Reducing your debt load before applying is one of the highest-priority actions in this plan.' }
+      };
+
+      const checkingData = inputs.checking === 'yes'
+        ? { title: 'Business Banking History (6+ Months)', impact: 8, body: 'Having an established business checking account with at least six months of history is a positive factor. It shows you are running a real business with financial infrastructure in place.' }
+        : { title: 'Business Banking History (Less Than 6 Months)', impact: -8, body: 'Not having a business checking account open for at least six months is hurting your score. Open one today if you have not already. The six-month clock starts when you open the account, so the sooner you move, the sooner this becomes a positive.' };
+
+      const lateData = inputs.latePayments === 'no'
+        ? { title: 'Payment History (No Late Payments)', impact: 10, body: 'Clean payment history over the past 12 months is a genuine strength. Keep this up. Any new late payments would undo this advantage quickly.' }
+        : { title: 'Payment History (Late Payments Present)', impact: -15, body: 'Late payments in the last 12 months are sending a direct negative signal. Lenders read this as a risk flag. Getting current on everything and then maintaining perfect payment history for the next 90 days is the fastest way to improve this factor.' };
+
+      return [
+        creditMap[inputs.credit],
+        yearsMap[inputs.years],
+        revMap[inputs.revenue],
+        debtMap[inputs.debt],
+        checkingData,
+        lateData
+      ];
+    }
+
+    // ---- ACTION PLAN ----
+    function getActionPlan(inputs, score) {
+      const actions = [];
+
+      const creditImpact = { 'below580': -30, '580-619': -15, '620-659': -5, '660-699': 5, '700-749': 20, '750plus': 35 }[inputs.credit] || 0;
+      const debtImpact = { 'none': 10, 'under25k': 5, '25-100k': -5, '100kplus': -15 }[inputs.debt] || 0;
+      const lateImpact = inputs.latePayments === 'no' ? 10 : -15;
+      const checkImpact = inputs.checking === 'yes' ? 8 : -8;
+
+      // Late payments fix
+      if (lateImpact < 0) {
+        actions.push({
+          title: 'Get Current on Every Payment Immediately',
+          body: 'Late payments are the fastest way to signal risk to a lender. Call every creditor you are behind with today. Many will work out a payment arrangement and, in some cases, remove the late notation once you are current. Set up autopay for every account so this never happens again. This single fix could add 10 or more points to your SBSS over 90 days.'
+        });
+      }
+
+      // Credit repair
+      if (creditImpact < 10) {
+        actions.push({
+          title: 'Dispute Errors on Your Personal Credit Report',
+          body: 'Pull your free report from all three bureaus at annualcreditreport.com. One in four Americans has an error on their credit file that is actively hurting their score. Dispute anything inaccurate directly with the bureau online. Disputes are required to be resolved within 30 days. This is free and often the fastest way to move the needle on your personal credit.'
+        });
+
+        actions.push({
+          title: 'Pay Down Personal Credit Card Balances',
+          body: 'Credit utilization, how much of your available credit you are using, accounts for about 30% of your personal FICO score. Getting every card below 30% utilization produces a score improvement that shows up within one billing cycle. Getting below 10% is even better. If you have multiple cards, prioritize the ones that are closest to their limit first. This is the highest-ROI credit move available to you right now.'
+        });
+      }
+
+      // Business checking
+      if (checkImpact < 0) {
+        actions.push({
+          title: 'Open a Dedicated Business Checking Account Today',
+          body: 'If you do not have a business checking account with at least six months of history, open one this week. Many banks offer free business checking with minimal requirements. Route all business income through this account consistently. This does two things: it starts your banking history clock and it demonstrates to lenders that your business finances are separate from your personal ones, which is a basic signal they look for.'
+        });
+      }
+
+      // Debt
+      if (debtImpact < 0) {
+        actions.push({
+          title: 'Reduce Existing Business Debt Before Applying',
+          body: 'Lenders calculate your debt service coverage ratio, which compares your revenue to your existing debt obligations. Paying down even a portion of your current business debt before applying shifts this ratio in your favor. Focus on eliminating the highest-interest debt first. If you cannot pay it down, try to consolidate it into a single lower-rate obligation to improve the optics of your balance sheet.'
+        });
+      }
+
+      // D&B / Paydex
+      actions.push({
+        title: 'Register with Dun and Bradstreet and Build Your Paydex Score',
+        body: 'The FICO SBSS model incorporates business credit data from bureaus including Dun and Bradstreet. Go to dnb.com and register your business for free to get a DUNS number. Then open two or three accounts with suppliers who report to D&B, like Uline, Quill, or Grainger, and pay them on time or early. A Paydex score of 80 or above is the target. This takes 90 days of consistent on-time payments to establish.'
+      });
+
+      // Separate finances
+      actions.push({
+        title: 'Separate Personal and Business Finances Completely',
+        body: 'If you are running business expenses through a personal account or mixing personal spending into business accounts, stop now. Lenders look at the clarity of your financials during underwriting. Mixed accounts raise red flags and slow approvals. Open a business credit card in the business name, route all business income through the business checking account, and never pay a personal expense from a business account. This also simplifies your books, which matters if a lender asks for statements.'
+      });
+
+      // If score is near threshold
+      if (score >= 150 && score < 165) {
+        actions.push({
+          title: 'You Are Close. Focus on the Two or Three Highest-Impact Items',
+          body: 'Your score of ' + score + ' is within 15 points of the SBA threshold. You do not need to fix everything at once. Look at this list, pick the two or three items that you can realistically act on in the next 60 days, and go deep on those. A 15-point improvement from a targeted set of changes is very achievable. Run this calculator again in 90 days once you have made progress.'
+        });
+      }
+
+      return actions.slice(0, 6);
+    }
+
+    // ---- LOAD PAGE DATA ----
+    window.addEventListener('DOMContentLoaded', () => {
+      const rawInputs = localStorage.getItem('sbss_inputs');
+      const storedScore = localStorage.getItem('sbss_score');
+
+      let inputs = rawInputs ? JSON.parse(rawInputs) : null;
+      let score = storedScore ? parseInt(storedScore) : null;
+
+      // Fallback: demo data if nothing in storage
+      if (!inputs) {
+        inputs = {
+          credit: '620-659',
+          years: '1-2',
+          revenue: '50-150k',
+          debt: 'under25k',
+          checking: 'yes',
+          latePayments: 'no'
+        };
+        score = calculateSBSS(inputs);
+      }
+
+      if (!score) score = calculateSBSS(inputs);
+
+      // Animate icon
+      gsap.to('#success-icon', { scale: 1, duration: 0.7, ease: 'back.out(1.7)', delay: 0.2 });
+      gsap.to('#score-card', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.4 });
+      gsap.to('#summary-card', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.55 });
+      gsap.to('#btn-pdf', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.7 });
+
+      // Score count-up
+      const finalScoreEl = document.getElementById('final-score');
+      gsap.to({ val: 0 }, {
+        val: score,
+        duration: 1.4,
+        delay: 0.5,
+        ease: 'power2.out',
+        onUpdate: function() {
+          finalScoreEl.textContent = Math.round(this.targets()[0].val);
+        }
+      });
+
+      // Status text
+      document.getElementById('status-text').textContent = score >= 165 ? 'above threshold' : 'below threshold';
+
+      // Summary fields
+      document.getElementById('sum-credit').textContent = CREDIT_LABELS[inputs.credit] || inputs.credit;
+      document.getElementById('sum-years').textContent = YEARS_LABELS[inputs.years] || inputs.years;
+      document.getElementById('sum-revenue').textContent = REV_LABELS[inputs.revenue] || inputs.revenue;
+      document.getElementById('sum-debt').textContent = DEBT_LABELS[inputs.debt] || inputs.debt;
+      document.getElementById('sum-checking').textContent = inputs.checking === 'yes' ? 'Yes' : 'No';
+      document.getElementById('sum-late').textContent = inputs.latePayments === 'yes' ? 'Yes' : 'No';
+
+      // Store for PDF generation
+      window._sbssInputs = inputs;
+      window._sbssScore = score;
+    });
+
+    // ---- PDF GENERATION ----
+    function generatePDF() {
+      const inputs = window._sbssInputs;
+      const score = window._sbssScore;
+
+      if (!inputs || !score) {
+        alert('Report data not found. Please go back and fill out the form again.');
+        return;
+      }
+
+      document.getElementById('generating-msg').style.display = 'block';
+      document.getElementById('btn-pdf').disabled = true;
+
+      setTimeout(() => {
+        try {
+          buildPDF(inputs, score);
+        } catch(err) {
+          console.error(err);
+          alert('There was a problem generating your PDF. Please try again.');
+        } finally {
+          document.getElementById('generating-msg').style.display = 'none';
+          document.getElementById('btn-pdf').disabled = false;
+        }
+      }, 100);
+    }
+
+    function buildPDF(inputs, score) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+
+      const W = 612; // letter width in pt
+      const margin = 56;
+      const contentWidth = W - margin * 2;
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Color helpers
+      const INK = [26, 26, 24];
+      const RED = [212, 34, 34];
+      const MUTED = [122, 117, 112];
+      const GREEN = [26, 122, 58];
+      const BG = [237, 232, 224];
+      const WHITE = [255, 255, 255];
+      const SURFACE = [228, 221, 212];
+
+      let y = 0;
+
+      // ============================================================
+      // PAGE 1
+      // ============================================================
+
+      // Top bar
+      doc.setFillColor(...RED);
+      doc.rect(0, 0, W, 8, 'F');
+
+      // Header background
+      doc.setFillColor(...BG);
+      doc.rect(0, 8, W, 160, 'F');
+
+      y = 52;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(...INK);
+      doc.text('SBA Loan Readiness Report', margin, y);
+
+      y += 22;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('Generated ' + today + '   |   Based on SBA and FICO SBSS guidelines, April 2025', margin, y);
+
+      // Score display box
+      y = 110;
+      doc.setFillColor(...INK);
+      doc.roundedRect(margin, y, contentWidth, 90, 10, 10, 'F');
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(180, 175, 170);
+      doc.text('YOUR ESTIMATED SBSS SCORE', margin + 20, y + 22);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(52);
+      doc.setTextColor(...WHITE);
+      doc.text(String(score), margin + 20, y + 68);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(160, 155, 150);
+      doc.text('out of 300', margin + 20 + doc.getTextWidth(String(score)) + 10, y + 68);
+
+      // Status badge
+      const statusText = score >= 165 ? 'ABOVE THRESHOLD' : 'BELOW THRESHOLD';
+      const badgeColor = score >= 165 ? [26, 80, 50] : [80, 20, 20];
+      const badgeTextColor = score >= 165 ? [100, 210, 150] : [255, 140, 140];
+      const badgeX = W - margin - 130;
+      doc.setFillColor(...badgeColor);
+      doc.roundedRect(badgeX, y + 55, 110, 22, 4, 4, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...badgeTextColor);
+      doc.text(statusText, badgeX + 55, y + 70, { align: 'center' });
+
+      y = 220;
+
+      // Threshold explanation
+      doc.setFillColor(...WHITE);
+      doc.roundedRect(margin, y, contentWidth, 70, 8, 8, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('SBA MINIMUM THRESHOLD', margin + 16, y + 18);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(...INK);
+      doc.text('165', margin + 16, y + 36);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      const thresholdNote = 'The SBA uses the FICO SBSS (Small Business Scoring Service) to pre-screen 7(a) loan applications. As of April 2025, applicants below 165 are typically declined without a manual review.';
+      const thresholdLines = doc.splitTextToSize(thresholdNote, contentWidth - 32);
+      doc.text(thresholdLines, margin + 16, y + 52);
+
+      y = 310;
+
+      // Score gauge visual
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      doc.text('SCORE GAUGE', margin, y);
+
+      y += 12;
+      const gaugeH = 14;
+      const gaugeW = contentWidth;
+      const thresholdPct = 165 / 300;
+      const redW = gaugeW * thresholdPct;
+      const greenW = gaugeW * (1 - thresholdPct);
+
+      // Red zone
+      doc.setFillColor(...RED);
+      doc.roundedRect(margin, y, redW, gaugeH, 4, 4, 'F');
+      // Green zone (override right corners)
+      doc.setFillColor(...GREEN);
+      doc.rect(margin + redW, y, greenW, gaugeH, 'F');
+      // Round right corners of green
+      doc.setFillColor(...GREEN);
+      doc.roundedRect(margin + redW, y, greenW, gaugeH, 4, 4, 'F');
+
+      // Score dot
+      const dotPct = Math.min(score / 300, 0.98);
+      const dotX = margin + gaugeW * dotPct;
+      doc.setFillColor(...WHITE);
+      doc.circle(dotX, y + gaugeH / 2, 8, 'F');
+      doc.setFillColor(...INK);
+      doc.circle(dotX, y + gaugeH / 2, 5, 'F');
+
+      y += gaugeH + 10;
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text('0', margin, y);
+      doc.text('165', margin + redW - 6, y);
+      doc.text('300', margin + gaugeW, y, { align: 'right' });
+
+      y += 20;
+
+      // Status message
+      doc.setFillColor(...SURFACE);
+      doc.roundedRect(margin, y, contentWidth, 70, 8, 8, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...INK);
+
+      if (score >= 165) {
+        doc.text('You are above the threshold.', margin + 16, y + 20);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...MUTED);
+        const msg = 'Your profile clears the SBA minimum. The next pages show what is working in your favor, where there is still room to strengthen your application, and how to put your best file forward when you apply.';
+        const msgLines = doc.splitTextToSize(msg, contentWidth - 32);
+        doc.text(msgLines, margin + 16, y + 36);
+      } else {
+        doc.text('You are closer than you think.', margin + 16, y + 20);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...MUTED);
+        const msg = 'Here is exactly what is holding your score back and how to move past it in the next 90 days. None of this requires perfect circumstances. It requires specific actions taken in a specific order.';
+        const msgLines = doc.splitTextToSize(msg, contentWidth - 32);
+        doc.text(msgLines, margin + 16, y + 36);
+      }
+
+      y += 90;
+
+      // Profile summary table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('PROFILE SUMMARY', margin, y);
+      y += 10;
+
+      const rows = [
+        ['Personal Credit Score', CREDIT_LABELS[inputs.credit] || inputs.credit],
+        ['Years in Business', YEARS_LABELS[inputs.years] || inputs.years],
+        ['Annual Revenue', REV_LABELS[inputs.revenue] || inputs.revenue],
+        ['Existing Business Debt', DEBT_LABELS[inputs.debt] || inputs.debt],
+        ['Business Checking Open 6+ Months', inputs.checking === 'yes' ? 'Yes' : 'No'],
+        ['Late Payments in Past 12 Months', inputs.latePayments === 'yes' ? 'Yes' : 'No']
+      ];
+
+      rows.forEach((row, i) => {
+        const rowY = y + i * 26;
+        doc.setFillColor(i % 2 === 0 ? 245 : 255, i % 2 === 0 ? 242 : 255, i % 2 === 0 ? 238 : 255);
+        doc.rect(margin, rowY, contentWidth, 24, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...MUTED);
+        doc.text(row[0], margin + 10, rowY + 15);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...INK);
+        doc.text(row[1], margin + contentWidth - 10, rowY + 15, { align: 'right' });
+      });
+
+      y += rows.length * 26 + 16;
+
+      // Page 1 footer
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text('SBA Loan Readiness Report   |   Page 1 of 4', W / 2, 770, { align: 'center' });
+      doc.setFillColor(...RED);
+      doc.rect(0, 780, W, 4, 'F');
+
+      // ============================================================
+      // PAGE 2
+      // ============================================================
+      doc.addPage();
+      doc.setFillColor(...RED);
+      doc.rect(0, 0, W, 8, 'F');
+
+      y = 52;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(...INK);
+      doc.text('What Is Affecting Your Score', margin, y);
+
+      y += 12;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('Each factor below is pulled directly from your answers. The impact numbers show how each one is shifting your score up or down.', margin, y, { maxWidth: contentWidth });
+
+      y += 30;
+
+      const factors = getFactorDetails(inputs);
+
+      factors.forEach((factor, i) => {
+        const impact = factor.impact;
+        const isNeg = impact < 0;
+
+        // Card
+        doc.setFillColor(isNeg ? 254 : 250, isNeg ? 248 : 254, isNeg ? 248 : 250);
+        doc.roundedRect(margin, y, contentWidth, 82, 6, 6, 'F');
+
+        // Left accent bar
+        doc.setFillColor(...(isNeg ? RED : GREEN));
+        doc.rect(margin, y, 4, 82, 'F');
+
+        // Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...INK);
+        doc.text(factor.title, margin + 14, y + 18);
+
+        // Impact badge
+        const impactStr = (impact > 0 ? '+' : '') + String(impact) + ' pts';
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...(isNeg ? RED : GREEN));
+        doc.text(impactStr, margin + contentWidth - 10, y + 18, { align: 'right' });
+
+        // Body
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...MUTED);
+        const bodyLines = doc.splitTextToSize(factor.body, contentWidth - 28);
+        doc.text(bodyLines, margin + 14, y + 33);
+
+        y += 92;
+
+        if (y > 700 && i < factors.length - 1) {
+          // Page footer
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(...MUTED);
+          doc.text('SBA Loan Readiness Report   |   Page 2 of 4', W / 2, 770, { align: 'center' });
+          doc.setFillColor(...RED);
+          doc.rect(0, 780, W, 4, 'F');
+          doc.addPage();
+          doc.setFillColor(...RED);
+          doc.rect(0, 0, W, 8, 'F');
+          y = 52;
+        }
+      });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text('SBA Loan Readiness Report   |   Page 2 of 4', W / 2, 770, { align: 'center' });
+      doc.setFillColor(...RED);
+      doc.rect(0, 780, W, 4, 'F');
+
+      // ============================================================
+      // PAGE 3
+      // ============================================================
+      doc.addPage();
+      doc.setFillColor(...RED);
+      doc.rect(0, 0, W, 8, 'F');
+
+      y = 52;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(...INK);
+      doc.text('Your 90-Day Action Plan', margin, y);
+
+      y += 12;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('Ranked by impact on your SBSS score. Focus on the top two or three first. Progress compounds.', margin, y, { maxWidth: contentWidth });
+
+      y += 28;
+
+      const actions = getActionPlan(inputs, score);
+
+      actions.forEach((action, i) => {
+        const num = String(i + 1);
+
+        // Number circle
+        doc.setFillColor(...RED);
+        doc.circle(margin + 14, y + 13, 12, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...WHITE);
+        doc.text(num, margin + 14, y + 17, { align: 'center' });
+
+        // Title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.setTextColor(...INK);
+        doc.text(action.title, margin + 34, y + 16);
+
+        y += 30;
+
+        // Body
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.8);
+        doc.setTextColor(...MUTED);
+        const bodyLines = doc.splitTextToSize(action.body, contentWidth - 34);
+        doc.text(bodyLines, margin + 34, y);
+        y += bodyLines.length * 13 + 18;
+
+        // Divider
+        if (i < actions.length - 1) {
+          doc.setDrawColor(...BG);
+          doc.setLineWidth(1);
+          doc.line(margin + 34, y - 8, margin + contentWidth, y - 8);
+        }
+
+        if (y > 680 && i < actions.length - 1) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(...MUTED);
+          doc.text('SBA Loan Readiness Report   |   Page 3 of 4', W / 2, 770, { align: 'center' });
+          doc.setFillColor(...RED);
+          doc.rect(0, 780, W, 4, 'F');
+          doc.addPage();
+          doc.setFillColor(...RED);
+          doc.rect(0, 0, W, 8, 'F');
+          y = 52;
+        }
+      });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text('SBA Loan Readiness Report   |   Page 3 of 4', W / 2, 770, { align: 'center' });
+      doc.setFillColor(...RED);
+      doc.rect(0, 780, W, 4, 'F');
+
+      // ============================================================
+      // PAGE 4
+      // ============================================================
+      doc.addPage();
+      doc.setFillColor(...RED);
+      doc.rect(0, 0, W, 8, 'F');
+
+      y = 52;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(...INK);
+      doc.text('What Happens at 165', margin, y);
+
+      y += 18;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED);
+
+      const pg4Body1 = 'The 165 threshold is not arbitrary. It is the score below which the SBA requires a lender to perform a full manual review of your application, which means longer timelines, more documentation requests, and a higher chance of denial without a compelling explanation of your business.';
+      const pg4Lines1 = doc.splitTextToSize(pg4Body1, contentWidth);
+      doc.text(pg4Lines1, margin, y);
+      y += pg4Lines1.length * 14 + 14;
+
+      const pg4Body2 = 'Once you cross 165, something real changes. Lenders can approve your application through a streamlined process called SBA Express without pulling every financial document manually. That means faster turnarounds, less friction, and a higher approval rate across the board.';
+      const pg4Lines2 = doc.splitTextToSize(pg4Body2, contentWidth);
+      doc.text(pg4Lines2, margin, y);
+      y += pg4Lines2.length * 14 + 14;
+
+      const pg4Body3 = 'Crossing 200 is even better. At that level, most lenders consider you a prime SBA borrower. Rates improve. Collateral requirements can loosen. And you have leverage to negotiate terms.';
+      const pg4Lines3 = doc.splitTextToSize(pg4Body3, contentWidth);
+      doc.text(pg4Lines3, margin, y);
+      y += pg4Lines3.length * 14 + 28;
+
+      // Milestones
+      const milestones = [
+        { score: '165', label: 'Streamlined SBA approval path unlocks', color: [200, 230, 210] },
+        { score: '185', label: 'Most lenders remove additional collateral requirements', color: [185, 225, 200] },
+        { score: '200+', label: 'Prime borrower status, improved rate negotiations', color: [170, 218, 190] }
+      ];
+
+      milestones.forEach(m => {
+        doc.setFillColor(...m.color);
+        doc.roundedRect(margin, y, contentWidth, 30, 6, 6, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...GREEN);
+        doc.text(m.score, margin + 14, y + 19);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...INK);
+        doc.text(m.label, margin + 50, y + 19);
+        y += 38;
+      });
+
+      y += 20;
+
+      // Personal note section
+      doc.setFillColor(...SURFACE);
+      doc.roundedRect(margin, y, contentWidth, 130, 10, 10, 'F');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.text('A NOTE FROM THE BUILDER', margin + 16, y + 20);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(...INK);
+      const note = 'I built this tool because I kept watching people walk into SBA loan conversations without knowing their SBSS score existed. Lenders know it before you say a word. Now you do too. This report is not a replacement for talking to a lender or a credit counselor. But it is a real starting point, built on the same publicly available framework lenders use. If you follow even two or three of the actions in this plan, you will be in a meaningfully different position in 90 days. That is the whole point.';
+      const noteLines = doc.splitTextToSize(note, contentWidth - 32);
+      doc.text(noteLines, margin + 16, y + 36);
+
+      y += 148;
+
+      // Footer disclaimer
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      const disclaimer = 'This report is an educational estimate based on publicly available SBA and FICO SBSS guidelines updated April 2025. It is not a formal credit decision, underwriting opinion, or guarantee of loan approval. Individual lender criteria vary.';
+      const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth);
+      doc.text(disclaimerLines, margin, 740);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(...MUTED);
+      doc.text('SBA Loan Readiness Report   |   Page 4 of 4', W / 2, 770, { align: 'center' });
+      doc.setFillColor(...RED);
+      doc.rect(0, 780, W, 4, 'F');
+
+      // ---- SAVE ----
+      const filename = 'SBA-Loan-Readiness-Report-Score-' + score + '.pdf';
+      doc.save(filename);
+    }
+  </script>
+</body>
+</html>
