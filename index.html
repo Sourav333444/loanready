@@ -1453,8 +1453,17 @@
     }
 
     modalSubmit.addEventListener('click', function() {
-      localStorage.setItem('user_email', emailInput.value.trim());
+      const email = emailInput.value.trim();
+      localStorage.setItem('user_email', email);
       localStorage.setItem('user_role', selectedRole);
+
+      // Send to Formspree (fire and forget — don't block navigation)
+      fetch('https://formspree.io/f/xwvzgbod', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email: email, role: selectedRole, score: localStorage.getItem('sbss_score') })
+      }).catch(() => {}); // silent fail — never block the user
+
       modal.classList.remove('open');
       window.location.href = 'success.html';
     });
